@@ -1,0 +1,6 @@
+jodconverter:
+  local:
+    enabled: true
+    port-numbers: 8100
+    # 注意：需安装OpenOffice，并配置为"program/soffice.bin"上层目录
+    office-home: /usr/local/Caskroom/openoffice/4.1.7/OpenOffice.app/Contents
