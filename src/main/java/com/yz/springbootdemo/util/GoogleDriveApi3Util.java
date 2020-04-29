@@ -66,16 +66,6 @@ public class GoogleDriveApi3Util {
                 .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
                 .setAccessType("offline").build();
 
-        // 方法1：需要输入校验码
-//        String url = flow.newAuthorizationUrl().setRedirectUri(REDIRECT_URI).build();
-//        System.out.println("Please open the following URL in your browser then type the authorization code:");
-//        System.out.println("  " + url);
-//        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-//        String code = br.readLine();
-//        GoogleTokenResponse response = flow.newTokenRequest(code).setRedirectUri(REDIRECT_URI).execute();
-//        return flow.createAndStoreCredential(response, null);
-
-        // 方法2
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
@@ -98,29 +88,25 @@ public class GoogleDriveApi3Util {
         }
     }
 
-    /**
-     * 上传并下载文件：实现文件类型转换
-     */
-    public void covert2Html() {
+    public void covertDoc2Html() {
         try {
             // 上传文件
             File fileMetadata = new File();
-            fileMetadata.setName("My Report");
-            // csv fileMetadata.setMimeType("application/vnd.google-apps.spreadsheet");
             fileMetadata.setMimeType("application/vnd.google-apps.document");
-            // fileMetadata.setMimeType("application/HTML");
-            // 指定文件
-            String name = String.format("/Users/yanzhu/Downloads/其他/%s", "江苏省江都中学2019-2020学年下学期高一数学周练试卷2020.3.22（无答案）.docx");
-            java.io.File filePath = new java.io.File(name);
-            // csv FileContent mediaContent = new FileContent("text/csv", filePath);
+            String name = "江苏省江都中学2019-2020学年下学期高一数学周练试卷2020.3.22（无答案）.docx";
+            java.io.File filePath = new java.io.File(String.format("/Users/yanzhu/Downloads/其他/原文件/%s", name));
             FileContent mediaContent = new FileContent("application/vnd.openxmlformats-officedocument.wordprocessingml.document", filePath);
             File file = service.files().create(fileMetadata, mediaContent).setFields("id").execute();
             System.out.println("File ID: " + file.getId());
             // 下载文件
-            // OutputStream outputStream = new ByteArrayOutputStream();
-            OutputStream outputStream = new FileOutputStream("/Users/yanzhu/Downloads/t.html");// 备用方法：指定目录
+            String fp = String.format("/Users/yanzhu/Downloads/其他/转换/%s.html", name);
+            OutputStream outputStream = new FileOutputStream(fp);
+            //OutputStream outputStream = new ByteArrayOutputStream();
             service.files().export(file.getId(), "text/html").executeMediaAndDownloadTo(outputStream);
-            // service.files().get(file.getId()).executeMediaAndDownloadTo(outputStream);// // 备用方法：get方式
+
+            // 修改文件内容
+            String content = FileUtil.readFileContent(fp);
+            FileUtil.writeFile(fp, content);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -128,7 +114,7 @@ public class GoogleDriveApi3Util {
 
     public static void main(String... args) throws Exception {
         GoogleDriveApi3Util util = new GoogleDriveApi3Util();
-        util.covert2Html();
+        util.covertDoc2Html();
         //util.getFiles();
     }
 }
